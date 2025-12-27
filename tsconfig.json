@@ -2,5 +2,15 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./apps/comment-service"
+    },
+    {
+      "path": "./apps/comment-service-job-processor"
+    },
+    {
+      "path": "./libs/backend"
+    }
+  ]
 }

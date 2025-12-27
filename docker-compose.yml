@@ -1,0 +1,32 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: my-rabbit-mq
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - '5672:5672' # AMQP
+      - '15672:15672' # Management UI
+
+  comment-service:
+    build:
+      context: .
+      dockerfile: ./apps/comment-service/Dockerfile
+    image: comment-svc-img
+    container_name: comment-service
+    ports:
+      - '3001:3001'
+    depends_on:
+      - rabbitmq
+
+  comment-service-job-processor:
+    build:
+      context: .
+      dockerfile: ./apps/comment-service-job-processor/Dockerfile
+    container_name: comment-service-job-processor
+    ports:
+      - '3333:3333'
+    depends_on:
+      - rabbitmq
