@@ -1,8 +1,8 @@
 # Scalable Event Driven Comment Service
 
-This repository demonstrates how to design and test a **high throughput, event driven backend system** for handling comments at scale.
+This repository demonstrates designing and testing a **high throughput, event driven backend system** for handling comments at scale.
 
-The primary goal of this project is to explore **system design, message queues, batching strategies, and backend scalability** under heavy load, not to build a production ready application.
+The primary goal of this project is to explore **system design, message queues, batching strategies, and backend scalability** under heavy load .
 
 On a single machine, the system handles **~7,000 requests per second on average** by decoupling user requests from expensive operations like database writes and notifications.
 
