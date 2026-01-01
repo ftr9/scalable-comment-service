@@ -1,6 +1,6 @@
 # New Nx Repository
 
-<img width="1292" height="534" alt="architecture-diagram" src="https://github.com/user-attachments/assets/ecb9c192-650e-46fd-8dd7-40edd58c2d5e" />
+<img width="1292" height="534" style="object-fit:contain;" alt="architecture-diagram" src="https://github.com/user-attachments/assets/ecb9c192-650e-46fd-8dd7-40edd58c2d5e" />
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
