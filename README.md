@@ -1,55 +1,190 @@
-# Scalable comment service
+# Scalable Event Driven Comment Service
 
-Scalable event driven comment system that handles on an average of **7K req/sec** .
+This repository demonstrates how to design and test a **high throughput, event driven backend system** for handling comments at scale.
 
-### Architecture
+The primary goal of this project is to explore **system design, message queues, batching strategies, and backend scalability** under heavy load, not to build a production ready application.
 
-<img style="object-fit:contain;" alt="architecture-diagram" src="https://github.com/user-attachments/assets/ecb9c192-650e-46fd-8dd7-40edd58c2d5e" />
+On a single machine, the system handles **~7,000 requests per second on average** by decoupling user requests from expensive operations like database writes and notifications.
 
-### services
+---
 
-1. comment-service (backend)
-2. comment-job-processor (backend)
-3. notification-service (backend)
-4. rabbitmq (message-broker)
-5. postgres Sql (database)
-6. Prisma (ORM)
+## Why this project exists
 
-### Tools
+Many backend systems struggle under load because everything happens synchronously.
 
-1. auto-cannon (for simulating heavy traffic)
-2. nx (monorepo - for reusable logic and utilities)
+This project was built to explore:
 
-<img width="1177" height="514" alt="Screenshot 2026-01-01 at 21 36 33" src="https://github.com/user-attachments/assets/882e2c62-d885-49bc-8a11-edcb39533c85" />
+- Handling high write throughput without blocking APIs
+- Using message queues to decouple services
+- Batch processing to improve database performance
+- Backpressure and flow control using prefetch limits
+- Scaling consumers using Node.js clustering
 
-3. Docker (containerization)
+The focus is on **architecture and behavior under stress**, not business logic.
 
-### How all pieces work together ?
+---
 
-1. user send request to comment-service backend continously
-2. comment-service acting as a producer sends the event to rabbitMq queue
-3. comment-job-processor service which is clustered spawns multiple node processes per CPU cores and also acting as a consumer receives an event from producer i.e comment-service . these consumers per node prefetches about 5k events each as a batch from producer . It then batch write to the database .
-4. After batch write is successfull - comment-job-processor sends the events to notification-service each event consists 5k batch written data .
-5. notification-service also clustered per CPU cores consumes events from comment-job-processor prefetches 1 events from queue .. each event consiste about 5k data .. notification service then sends the notification to the user about - someone added comment push notification
+## High level architecture
 
-> NOTE: sending push notification is simulated it does not send real notification - sleep method is used just to simulate sent notification and also in comment-service sleep() method is used to simulate slow DB write .. although it's written to DB slow process is simulated
+![Architecture Diagram](https://github.com/user-attachments/assets/ecb9c192-650e-46fd-8dd7-40edd58c2d5e)
 
-# Snapshots of test
+---
 
-### Simulating traffic with auto-cannon
-<img width="628" height="310" alt="Screenshot 2026-01-01 at 20 37 58" src="https://github.com/user-attachments/assets/e2ab95c0-a9a1-4b65-945c-8b8036a726ea" />
-ing
+## Core services
 
-### Comment queue filling up with events
-<img width="732" height="905" alt="Screenshot 2026-01-01 at 20 38 48" src="https://github.com/user-attachments/assets/f51b0a31-4e1a-420b-9408-f7c0b0338b8b" />
+- **comment-service**  
+  Accepts user requests and publishes comment events to RabbitMQ.
 
-### Notification queue getting events from comment-job-processor
-<img width="738" height="907" alt="Screenshot 2026-01-01 at 20 39 16" src="https://github.com/user-attachments/assets/203a0883-e493-4726-b7f2-f74b9be3c344" />
+- **comment-job-processor**  
+  Consumes comment events in large batches and performs efficient database writes.
 
-### Clustered backend (comment-job-processor and notification-service) connected to rabbitmq - my current PC have 8 cores 
-<img width="765" height="895" alt="Screenshot 2026-01-01 at 20 44 19" src="https://github.com/user-attachments/assets/d70263d8-11c9-4475-9ea0-4d9a99b9d1f0" />
+- **notification-service**  
+  Processes completed batches and simulates sending push notifications.
 
-### DB snapshot at comments table 
-<img width="766" height="664" alt="Screenshot 2026-01-01 at 20 45 08" src="https://github.com/user-attachments/assets/be34a47d-e428-4ff2-9ae4-a461eabafa0c" />
+- **RabbitMQ**  
+  Message broker used to decouple services and manage backpressure.
 
+- **PostgreSQL**  
+  Persistent storage for comments.
 
+- **Prisma**  
+  ORM used for database access.
+
+---
+
+## Event flow
+
+1. User sends requests continuously to `comment-service`
+2. `comment-service` publishes events to RabbitMQ
+3. `comment-job-processor` consumes events in batches (prefetch ~5,000)
+4. Batched comments are written to the database
+5. Successfully written batches are published to `notification-service`
+6. `notification-service` processes one batch at a time and simulates notifications
+
+Artificial delays are added to simulate slow database writes and notification delivery.
+
+---
+
+## Load testing
+
+Traffic is simulated using **autocannon** to validate system behavior under heavy load.
+
+### Simulating high traffic
+
+![Autocannon traffic simulation](https://github.com/user-attachments/assets/e2ab95c0-a9a1-4b65-945c-8b8036a726ea)
+
+---
+
+## Queue behavior under load
+
+### Comment queue filling up
+
+![Comment queue filling up](https://github.com/user-attachments/assets/f51b0a31-4e1a-420b-9408-f7c0b0338b8b)
+
+### Notification queue receiving batched events
+
+![Notification queue](https://github.com/user-attachments/assets/203a0883-e493-4726-b7f2-f74b9be3c344)
+
+---
+
+## Worker scaling
+
+Both `comment-job-processor` and `notification-service` are clustered and scale across CPU cores.
+
+Below is a snapshot of multiple worker processes connected to RabbitMQ on an 8-core machine.
+
+![Clustered services](https://github.com/user-attachments/assets/d70263d8-11c9-4475-9ea0-4d9a99b9d1f0)
+
+---
+
+## Database results
+
+Batched inserts significantly reduce write pressure on the database.
+
+![Comments table snapshot](https://github.com/user-attachments/assets/be34a47d-e428-4ff2-9ae4-a461eabafa0c)
+
+---
+
+## What this project is not
+
+- No authentication or authorization
+- No UI or frontend
+- No cloud specific tuning
+
+This is a **experimentation project** focused purely on backend scalability.
+
+# Setup Guide
+
+This guide walks you through running the project locally, verifying services, and testing the event flow using RabbitMQ.
+
+---
+
+## 1. Prerequisites
+
+Make sure you have the following installed on your machine:
+
+- Docker
+- Node.js
+
+---
+
+## 2. Clone the Repository
+
+```bash
+git clone https://github.com/ftr9/scalable-comment-service.git
+```
+
+## 3. Start Docker
+
+Ensure Docker is running on your system before proceeding
+
+## 4. Build and Start All Services
+
+Run the following command to build images and start all containers:
+
+```bash
+docker compose up --build
+```
+
+## 5. Open the API
+
+Once all services are up, open the API endpoint in your browser:
+
+```bash
+http://localhost:3001/api
+```
+
+## 6. Verify Service Logs
+
+Check the logs of the following services:
+
+- comment-service-job-processor
+- notification-service
+
+You should see successful startup and processing logs similar to the screenshot below.
+
+If everything is working correctly, there should be no error logs.
+
+## 7. Install Autocannon and Run Load Script
+
+Install Autocannon globally using npm:
+
+```bash
+npm install -g autocannon
+```
+
+Then run the producer simulation script located here:
+
+https://github.com/ftr9/scalable-comment-service/blob/main/apps/comment-service/src/scripts/simulate-producer-event.sh
+
+This script generates events and pushes them into the system.
+
+## 8. Check Events in RabbitMQ Dashboard
+
+After running the script, open the RabbitMQ management dashboard:
+
+```bash
+http://localhost:15672
+```
+
+From the dashboard, you can inspect queues, exchanges, and verify that events are being published and consumed correctly.
