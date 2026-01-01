@@ -1,14 +1,18 @@
 import app from './app';
 
-import { MessageBroker } from '@org/backend';
+import {
+  MESSAGE_BROKER_CONNECTION_URI,
+  MessageBroker,
+  QUEUES,
+} from '@org/backend';
 
 (async () => {
   try {
     const messageBroker = await new MessageBroker();
-    await messageBroker.connect('amqp://user:password@localhost:5672');
+    await messageBroker.connect(MESSAGE_BROKER_CONNECTION_URI);
 
     const channel = await messageBroker.createChannel();
-    channel.assertQueue('hello', { durable: false });
+    channel.assertQueue(QUEUES.COMMENT_QUEUE, { durable: true });
 
     const port = process.env.PORT || 3001;
     const server = app.listen(port, () => {

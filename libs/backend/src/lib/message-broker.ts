@@ -1,7 +1,14 @@
 import amqp from 'amqplib';
+import type {
+  ConsumeMessage as TConsumeMessage,
+  Channel as TChannel,
+} from 'amqplib';
 
 let isConnected = false;
 let channel: amqp.Channel | null = null;
+
+export type ConsumeMessage = TConsumeMessage;
+export type Channel = TChannel;
 
 export class MessageBroker {
   private connection: amqp.ChannelModel | null = null;

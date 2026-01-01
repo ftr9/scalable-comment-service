@@ -45,7 +45,8 @@
       },
       "exclude": [
         "apps/comment-service-e2e/**/*",
-        "apps/comment-service-job-processor-e2e/**/*"
+        "apps/comment-service-job-processor-e2e/**/*",
+        "apps/notification-service-e2e/**/*"
       ]
     }
   ],

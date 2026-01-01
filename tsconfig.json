@@ -11,6 +11,12 @@
     },
     {
       "path": "./libs/backend"
+    },
+    {
+      "path": "./libs/types"
+    },
+    {
+      "path": "./apps/notification-service"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@org/comment-service-job-processor",
+  "name": "@org/notification-service",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -11,8 +11,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/apps/comment-service-job-processor/dist/package.json",
-          "{workspaceRoot}/apps/comment-service-job-processor/dist/package-lock.json"
+          "{workspaceRoot}/apps/notification-service/dist/package.json",
+          "{workspaceRoot}/apps/notification-service/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -24,7 +24,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/apps/comment-service-job-processor/dist/workspace_modules"
+          "{workspaceRoot}/apps/notification-service/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -46,35 +46,21 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@org/comment-service-job-processor:build",
+          "buildTarget": "@org/notification-service:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@org/comment-service-job-processor:build:development"
+            "buildTarget": "@org/notification-service:build:development"
           },
           "production": {
-            "buildTarget": "@org/comment-service-job-processor:build:production"
+            "buildTarget": "@org/notification-service:build:production"
           }
-        }
-      },
-      "migrate-and-seed-db": {
-        "executor": "nx:run-commands",
-        "options": {
-          "commands": [
-            "npx prisma migrate dev --name init --schema apps/comment-service-job-processor/prisma/schema.prisma"
-          ],
-          "parallel": false
         }
       }
     }
   },
-  "scripts": {
-    "migrate": "npx prisma migrate dev --name init && npx prisma generate && npx prisma db seed",
-    "start": "npm run migrate && node dist/main.js"
-  },
   "dependencies": {
-    "express": "^4.21.2",
-    "tsx": "^4.21.0"
+    "express": "^4.21.2"
   }
 }
